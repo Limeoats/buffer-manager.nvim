@@ -1,5 +1,4 @@
-local Job = require("plenary.job")
-local utils = require("buffer-manager.utils")
+require("buffer-manager.utils")
 
 local M = {}
 
@@ -103,7 +102,7 @@ M.show_buffer_list = function()
         vim.api.nvim_buf_set_keymap(buf, "n", "d", string.format(":lua delete_buffer(%d)<CR>", win), opts)
     end
 
-    -- Set some text
+    -- Set the buffer text
 
     local line = center("Mange your buffers!")
 
@@ -123,7 +122,7 @@ M.show_buffer_list = function()
     vim.api.nvim_buf_set_option(buf, "modifiable", false)
 end
 
-M.setup()
-M.show_buffer_list()
+--M.setup()
+--M.show_buffer_list()
 
 return M
