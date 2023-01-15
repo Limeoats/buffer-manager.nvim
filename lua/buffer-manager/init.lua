@@ -6,6 +6,10 @@ local defaults = {
     window_width = 90,
     window_height = 25,
     force_close = false,
+    keys = {
+        delete_key = 'x',
+        wipe_key = 'w',
+    }
 }
 
 local ui = vim.api.nvim_list_uis()[1]
@@ -93,14 +97,19 @@ M.show_buffer_list = function()
         end,
     })
 
-    local closing_keys = { "q" }
+
+
+    -- Set keymaps
+    local closing_keys = { "q", "<esc>" }
     local opts = { noremap = true, silent = true }
     for _, key in pairs(closing_keys) do
         vim.api.nvim_buf_set_keymap(buf, "n", key, string.format(":lua vim.api.nvim_win_close(%d, false)<CR>", win), opts)
-        vim.api.nvim_buf_set_keymap(buf, "n", "<CR>",
-            string.format(":lua edit_buffer(%d, %d)<CR>", current_win, win), opts)
-        vim.api.nvim_buf_set_keymap(buf, "n", "d", string.format(":lua delete_buffer(%d)<CR>", win), opts)
     end
+    vim.api.nvim_buf_set_keymap(buf, "n", "<CR>",
+        string.format(":lua edit_buffer(%d, %d)<CR>", current_win, win), opts)
+    vim.api.nvim_buf_set_keymap(buf, "n", M.options.keys["delete_key"], string.format(":lua delete_buffer(%d)<CR>", win)
+        , opts)
+
 
     -- Set the buffer text
 
@@ -108,7 +117,9 @@ M.show_buffer_list = function()
 
     vim.api.nvim_buf_set_lines(buf, 1, 1, false, { line })
     vim.api.nvim_buf_set_lines(buf, 2, 2, false, { " " })
-    vim.api.nvim_buf_set_lines(buf, 3, 3, false, { center("d = :bd | w = :bw | return = :e") })
+    vim.api.nvim_buf_set_lines(buf, 3, 3, false,
+        { center(string.format("%s = :bd | %s = :bw | return = :e | q = cancel", M.options.keys["delete_key"],
+            M.options.keys["wipe_key"])) })
     vim.api.nvim_buf_set_lines(buf, 4, 4, false, { " " })
 
     local buffers = get_buffers()
@@ -122,7 +133,7 @@ M.show_buffer_list = function()
     vim.api.nvim_buf_set_option(buf, "modifiable", false)
 end
 
---M.setup()
---M.show_buffer_list()
+M.setup()
+M.show_buffer_list()
 
 return M
