@@ -2,6 +2,8 @@
 
 A simple buffer manager for Neovim
 
+![screenshot](images/1.png)
+
 ## Installation
 
 Install with Packer:
