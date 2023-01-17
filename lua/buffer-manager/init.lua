@@ -65,6 +65,11 @@ end
 
 M.setup = function(options)
     M.options = vim.tbl_deep_extend("force", {}, defaults, options or {})
+
+    vim.api.nvim_create_user_command("BufferManagerShow", function()
+        M.show_buffer_list()
+    end
+    )
 end
 
 -- { cursor line, buffer number }
@@ -131,6 +136,8 @@ M.show_buffer_list = function()
 
     vim.api.nvim_buf_set_option(buf, "modifiable", false)
 end
+
+
 
 --M.setup()
 --M.show_buffer_list()
