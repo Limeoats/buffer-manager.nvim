@@ -98,7 +98,6 @@ M.show_buffer_list = function()
     })
 
 
-
     -- Set keymaps
     local closing_keys = { "q", "<esc>" }
     local opts = { noremap = true, silent = true }
@@ -133,7 +132,7 @@ M.show_buffer_list = function()
     vim.api.nvim_buf_set_option(buf, "modifiable", false)
 end
 
-M.setup()
-M.show_buffer_list()
+--M.setup()
+--M.show_buffer_list()
 
 return M
