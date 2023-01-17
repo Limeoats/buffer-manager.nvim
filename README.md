@@ -50,7 +50,7 @@ Please feel free to open an issue if you find any bugs or have feature suggestio
 
 ## License
 
-This project is under the [MIT License](https://github.com/Limeoats/buffer-manager.nvim/blob/main/LICENSE).
+This project is under the [MIT License](https://github.com/Limeoats/buffer-manager.nvim/blob/master/LICENSE).
 
 ## Support
 
