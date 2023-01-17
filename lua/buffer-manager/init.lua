@@ -69,7 +69,7 @@ M.setup = function(options)
     vim.api.nvim_create_user_command("BufferManagerShow", function()
         M.show_buffer_list()
     end
-    )
+        , {})
 end
 
 -- { cursor line, buffer number }
