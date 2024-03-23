@@ -35,7 +35,8 @@ function delete_buffer(buf_list_win)
     else
         if vim.bo[buffer].modified then
             vim.api.nvim_echo({ {
-                string.format("The buffer you're trying to close (%d: %s) has been modified since the last write. Would you like to:\n"
+                string.format(
+                    "The buffer you're trying to close (%d: %s) has been modified since the last write. Would you like to:\n"
                     ..
                     "(s)ave and close\n(f)orce close without save\n(c)ancel",
                     buffer, vim.api.nvim_buf_get_name(buffer))
@@ -69,11 +70,12 @@ M.setup = function(options)
     vim.api.nvim_create_user_command("BufferManagerShow", function()
         M.show_buffer_list()
     end
-        , {})
+    , {})
 end
 
 -- { cursor line, buffer number }
 M._buffer_map = {}
+M._previous_pos = { 0, 0 }
 
 M.show_buffer_list = function()
     local buf = vim.api.nvim_create_buf(false, true)
@@ -91,13 +93,23 @@ M.show_buffer_list = function()
         border = "rounded",
     })
 
+    -- TODO: Clean this up. Lots of hacky magic numbers in here.
     vim.api.nvim_create_autocmd("CursorMoved", {
         buffer = buf,
         group = vim.api.nvim_create_augroup("prevent_cursor", { clear = false }),
         callback = function()
             local pos = vim.api.nvim_win_get_cursor(win)
             if pos[1] < 6 then
-                vim.api.nvim_win_set_cursor(win, { 6, pos[2] })
+                vim.api.nvim_win_set_cursor(win, { 6, M._previous_pos[2] })
+            end
+
+            -- Prevent cursor from going into column 1
+            if pos[2] < 1 then
+                vim.api.nvim_win_set_cursor(win, { M._previous_pos[1], 1 })
+            end
+
+            if pos[1] ~= 5 and pos[2] ~= 0 then
+                M._previous_pos = pos
             end
         end,
     })
@@ -112,12 +124,12 @@ M.show_buffer_list = function()
     vim.api.nvim_buf_set_keymap(buf, "n", "<CR>",
         string.format(":lua edit_buffer(%d, %d)<CR>", current_win, win), opts)
     vim.api.nvim_buf_set_keymap(buf, "n", M.options.keys["delete_key"], string.format(":lua delete_buffer(%d)<CR>", win)
-        , opts)
+    , opts)
 
 
     -- Set the buffer text
 
-    local line = center("Mange your buffers!")
+    local line = center("Manage your buffers!")
 
     vim.api.nvim_buf_set_lines(buf, 1, 1, false, { line })
     vim.api.nvim_buf_set_lines(buf, 2, 2, false, { " " })
@@ -130,9 +142,13 @@ M.show_buffer_list = function()
     for i, b in ipairs(buffers) do
         local name = vim.api.nvim_buf_get_name(b)
         M._buffer_map[5 + i] = b
-        vim.api.nvim_buf_set_lines(buf, 5 + i, 5 + i, false, { b .. "   " .. name })
+        vim.api.nvim_buf_set_lines(buf, 5 + i, 5 + i, false, { " " .. b .. "   " .. name })
     end
 
+    -- Set the cursor to the first buffer
+    -- TODO: Consider setting the cursor to the current buffer's line.
+    -- Also, at a minimum, set the starting line to a constant instead of a magic number.
+    vim.api.nvim_win_set_cursor(win, { 6, 1 })
 
     vim.api.nvim_buf_set_option(buf, "modifiable", false)
 end
