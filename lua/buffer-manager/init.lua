@@ -3,9 +3,12 @@ require("buffer-manager.utils")
 local M = {}
 
 local defaults = {
+    window_title = "Manage your buffers!",
     window_width = 90,
     window_height = 25,
     force_close = false,
+    padding_left = 1,
+    padding_right = 1,
     keys = {
         delete_key = 'x',
         wipe_key = 'w',
@@ -30,7 +33,7 @@ end
 function delete_buffer(buf_list_win)
     local pos = vim.api.nvim_win_get_cursor(buf_list_win)
     local buffer = M._buffer_map[pos[1]]
-    if M.options["force"] then
+    if M.options["force_close"] then
         vim.api.nvim_buf_delete(buffer, { force = true })
     else
         if vim.bo[buffer].modified then
@@ -104,8 +107,8 @@ M.show_buffer_list = function()
             end
 
             -- Prevent cursor from going into column 1
-            if pos[2] < 1 then
-                vim.api.nvim_win_set_cursor(win, { M._previous_pos[1], 1 })
+            if pos[2] < M.options["padding_left"] then
+                vim.api.nvim_win_set_cursor(win, { M._previous_pos[1], M.options["padding_left"] })
             end
 
             if pos[1] ~= 5 and pos[2] ~= 0 then
@@ -129,7 +132,7 @@ M.show_buffer_list = function()
 
     -- Set the buffer text
 
-    local line = center("Manage your buffers!")
+    local line = center(M.options["window_title"])
 
     vim.api.nvim_buf_set_lines(buf, 1, 1, false, { line })
     vim.api.nvim_buf_set_lines(buf, 2, 2, false, { " " })
@@ -142,13 +145,14 @@ M.show_buffer_list = function()
     for i, b in ipairs(buffers) do
         local name = vim.api.nvim_buf_get_name(b)
         M._buffer_map[5 + i] = b
-        vim.api.nvim_buf_set_lines(buf, 5 + i, 5 + i, false, { " " .. b .. "   " .. name })
+        vim.api.nvim_buf_set_lines(buf, 5 + i, 5 + i, false,
+            { string.rep(" ", M.options["padding_left"]) .. b .. "   " .. name })
     end
 
     -- Set the cursor to the first buffer
     -- TODO: Consider setting the cursor to the current buffer's line.
     -- Also, at a minimum, set the starting line to a constant instead of a magic number.
-    vim.api.nvim_win_set_cursor(win, { 6, 1 })
+    vim.api.nvim_win_set_cursor(win, { 6, M.options["padding_left"] })
 
     vim.api.nvim_buf_set_option(buf, "modifiable", false)
 end
