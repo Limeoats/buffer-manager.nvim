@@ -194,10 +194,19 @@ M.show_buffer_list = function()
             { string.rep(" ", M.options["padding_left"]) .. b .. "   " .. name })
     end
 
-    -- Set the cursor to the first buffer
-    -- TODO: Consider setting the cursor to the current buffer's line.
-    -- Also, at a minimum, set the starting line to a constant instead of a magic number.
-    vim.api.nvim_win_set_cursor(win, { 6, M.options["padding_left"] })
+    -- Set the cursor to the position of the current buffer
+    -- Find the current buffer and loop through all open buffers to find the matching bufnr
+    -- The index of the matching buffer should be how many rows we need to add when
+    -- setting the cursor pos.
+    local main_buffer = get_main_buffer_behind_floating()
+    local buf_index = 1
+    for i, b in ipairs(buffers) do
+        if b == main_buffer then
+            buf_index = i
+        end
+    end
+
+    vim.api.nvim_win_set_cursor(win, { 5 + buf_index, M.options["padding_left"] })
 
     vim.api.nvim_buf_set_option(buf, "modifiable", false)
 end
