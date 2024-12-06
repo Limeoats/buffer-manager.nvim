@@ -35,6 +35,7 @@ buffer_manager.setup {
     keys = {
         delete_key = 'x',
         wipe_key = 'w',
+        close_other_buffers_key = 'O'
     }
 }
 ```

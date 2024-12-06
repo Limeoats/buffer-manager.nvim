@@ -12,6 +12,7 @@ local defaults = {
     keys = {
         delete_key = 'x',
         wipe_key = 'w',
+        close_other_buffers_key = 'O',
     }
 }
 
@@ -28,6 +29,32 @@ function edit_buffer(win, buf_list_win)
     local pos = vim.api.nvim_win_get_cursor(buf_list_win)
     local buffer = M._buffer_map[pos[1]]
     vim.api.nvim_win_set_buf(win, buffer)
+end
+
+function delete_all_other_buffers(buf_list_win)
+    local pos = vim.api.nvim_win_get_cursor(buf_list_win)
+    local buffer = M._buffer_map[pos[1]]
+    local buffers = get_buffers()
+    if M.options["force_close"] then
+        vim.api.nvim_echo({ { string.format("Are you sure you want to force close all other buffers? (y/n)") } },
+            false, {})
+        local choice = string.char(vim.fn.getchar())
+        if choice == 'y' or choice == 'Y' then
+            local deleted_count = 0
+            for _, b in ipairs(buffers) do
+                if b ~= buffer then
+                    vim.api.nvim_buf_delete(b, { force = true })
+                    deleted_count = deleted_count + 1
+                end
+            end
+            vim.api.nvim_echo({ { string.format("Closed %d buffers", deleted_count) } }, false, {})
+        else
+            vim.cmd.echo('""')
+        end
+    else
+        vim.notify("You must set the [force_close] option to use this functionality", vim.log.levels.ERROR)
+    end
+    refresh_window(buf_list_win)
 end
 
 function delete_buffer(buf_list_win)
@@ -129,6 +156,9 @@ M.show_buffer_list = function()
     vim.api.nvim_buf_set_keymap(buf, "n", M.options.keys["delete_key"], string.format(":lua delete_buffer(%d)<CR>", win)
     , opts)
 
+    vim.api.nvim_buf_set_keymap(buf, "n", M.options.keys["close_other_buffers_key"],
+        string.format(":lua delete_all_other_buffers(%d)<CR>", win), opts)
+
 
     -- Set the buffer text
 
@@ -158,8 +188,7 @@ M.show_buffer_list = function()
 end
 
 
-
---M.setup()
+M.setup()
 --M.show_buffer_list()
 
 return M
