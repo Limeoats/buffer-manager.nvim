@@ -2,21 +2,23 @@
 
 A simple buffer manager for Neovim
 
-![screenshot](images/1.png)
+![screenshot](images/2.png)
 
 ## Installation
 
-Install with Packer:
+Install with Lazy:
 
-```lua
-use "Limeoats/buffer-manager.nvim"
-```
+````lua
+return {
+    "Limeoats/buffer-manager.nvim",
+    lazy = true,
+}
 
 or install with vim-plug:
 
 ```vim
 Plug 'Limeoats/buffer-manager.nvim'
-```
+````
 
 ## Setup
 
