@@ -6,7 +6,6 @@ local defaults = {
     window_title = "Manage your buffers!",
     window_width = 90,
     window_height = 25,
-    force_close = false,
     padding_left = 1,
     padding_right = 1,
     keys = {
@@ -35,57 +34,73 @@ function delete_all_other_buffers(buf_list_win)
     local pos = vim.api.nvim_win_get_cursor(buf_list_win)
     local buffer = M._buffer_map[pos[1]]
     local buffers = get_buffers()
-    if M.options["force_close"] then
-        vim.api.nvim_echo({ { string.format("Are you sure you want to force close all other buffers? (y/n)") } },
-            false, {})
+
+    -- First check if there are any open buffers with unsaved changes
+    local any_unsaved_buffers = false
+    for _, b in ipairs(buffers) do
+        if vim.bo[b].modified then
+            any_unsaved_buffers = true
+        end
+    end
+    if any_unsaved_buffers then
+        vim.api.nvim_echo({ { string.format("You have one or more unsaved buffers. Would you like to:\n"
+            ..
+            "(s)ave all of them and close\n(f)orce close them without save\n(c)ancel") } }, false, {})
         local choice = string.char(vim.fn.getchar())
-        if choice == 'y' or choice == 'Y' then
-            local deleted_count = 0
+        if choice == 'c' or choice == 'C' then
+            vim.cmd.echo('""')
+            vim.cmd.redraw()
+            return
+        end
+        if choice == 's' or choice == 'S' then
             for _, b in ipairs(buffers) do
-                if b ~= buffer then
-                    vim.api.nvim_buf_delete(b, { force = true })
-                    deleted_count = deleted_count + 1
+                if vim.bo[b].modified then
+                    vim.api.nvim_buf_call(b, function() vim.cmd.write() end)
                 end
             end
-            vim.api.nvim_echo({ { string.format("Closed %d buffers", deleted_count) } }, false, {})
-        else
             vim.cmd.echo('""')
+            vim.cmd.redraw()
         end
-    else
-        vim.notify("You must set the [force_close] option to use this functionality", vim.log.levels.ERROR)
     end
+
+    -- Force close everything since we now have either saved it all, cancelled, or selected force.
+    local deleted_count = 0
+    for _, b in ipairs(buffers) do
+        if b ~= buffer then
+            vim.api.nvim_buf_delete(b, { force = true })
+            deleted_count = deleted_count + 1
+        end
+    end
+    vim.api.nvim_echo({ { string.format("Closed %d buffers", deleted_count) } }, false, {})
+
     refresh_window(buf_list_win)
 end
 
 function delete_buffer(buf_list_win)
     local pos = vim.api.nvim_win_get_cursor(buf_list_win)
     local buffer = M._buffer_map[pos[1]]
-    if M.options["force_close"] then
-        vim.api.nvim_buf_delete(buffer, { force = true })
-    else
-        if vim.bo[buffer].modified then
-            vim.api.nvim_echo({ {
-                string.format(
-                    "The buffer you're trying to close (%d: %s) has been modified since the last write. Would you like to:\n"
-                    ..
-                    "(s)ave and close\n(f)orce close without save\n(c)ancel",
-                    buffer, vim.api.nvim_buf_get_name(buffer))
-            } }, false, {})
-            local choice = string.char(vim.fn.getchar())
-            -- Save buffer
-            if choice == 'c' or choice == 'C' then
-                vim.cmd.echo('""')
-                vim.cmd.redraw()
-                return
-            end
-            if choice == 's' or choice == 'S' then
-                vim.api.nvim_buf_call(buffer, function() vim.cmd.write() end)
-            end
+    if vim.bo[buffer].modified then
+        vim.api.nvim_echo({ {
+            string.format(
+                "The buffer you're trying to close (%d: %s) has been modified since the last write. Would you like to:\n"
+                ..
+                "(s)ave and close\n(f)orce close without save\n(c)ancel",
+                buffer, vim.api.nvim_buf_get_name(buffer))
+        } }, false, {})
+        local choice = string.char(vim.fn.getchar())
+        -- Save buffer
+        if choice == 'c' or choice == 'C' then
             vim.cmd.echo('""')
             vim.cmd.redraw()
+            return
         end
-        vim.api.nvim_buf_delete(buffer, { force = true })
+        if choice == 's' or choice == 'S' then
+            vim.api.nvim_buf_call(buffer, function() vim.cmd.write() end)
+        end
+        vim.cmd.echo('""')
+        vim.cmd.redraw()
     end
+    vim.api.nvim_buf_delete(buffer, { force = true })
     refresh_window(buf_list_win)
 end
 

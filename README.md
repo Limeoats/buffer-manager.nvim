@@ -29,7 +29,6 @@ buffer_manager.setup {
     window_title = "Manage your buffers!",
     window_width = 90,
     window_height = 25,
-    force_close = false,
     padding_left = 1,
     padding_right = 1,
     keys = {
