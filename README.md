@@ -8,17 +8,17 @@ A simple buffer manager for Neovim
 
 Install with Lazy:
 
-````lua
+```lua
 return {
-    "Limeoats/buffer-manager.nvim",
-    lazy = true,
+    "Limeoats/buffer-manager.nvim"
 }
+```
 
 or install with vim-plug:
 
 ```vim
 Plug 'Limeoats/buffer-manager.nvim'
-````
+```
 
 ## Setup
 
@@ -68,3 +68,7 @@ If you find this plugin helpful and would like to say thank you, feel free to cl
 ## Contact
 
 Limeoats - [@Limeoats](https://twitter.com/limeoats) - oats@limeoats.com
+
+```
+
+```
